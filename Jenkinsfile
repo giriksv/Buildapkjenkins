@@ -13,7 +13,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 // Use credentials to clone the repository
-                git branch: 'main', url: 'https://github.com/giriksv/Buildapkjenkins.git', credentialsId: 'github-credentials'
+                git branch: 'main', url: 'https://github.com/giriksv/Buildapkjenkins.git', credentialsId: 'ksv2023Sample'
             }
         }
         stage('Generate Keystore') {

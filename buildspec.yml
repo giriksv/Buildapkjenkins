@@ -1,0 +1,38 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto11
+      android: latest
+    commands:
+      - echo "Installing Flutter..."
+      - git clone https://github.com/flutter/flutter.git -b stable
+      - export PATH="$PATH:`pwd`/flutter/bin"
+      - flutter doctor
+
+  pre_build:
+    commands:
+      - echo "Generating Keystore..."
+      - keytool -genkey -v -keystore keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload -storepass ksv!12345 -keypass ksv!12345 -dname "CN=ZingTekInnovations, OU=Development, O=ZingTekInnovations, L=City, ST=State, C=IN"
+      - echo "Keystore generated successfully."
+
+  build:
+    commands:
+      - echo "Building Flutter APK..."
+      - flutter build apk --release
+      - echo "APK build completed."
+
+  post_build:
+    commands:
+      - echo "Signing APK..."
+      - jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore keystore.jks -storepass ksv!12345 -keypass ksv!12345 build/app/outputs/apk/release/app-release-unsigned.apk upload
+      - echo "APK signed successfully."
+      - echo "Zipaligning APK..."
+      - $ANDROID_HOME/build-tools/30.0.3/zipalign -v 4 build/app/outputs/apk/release/app-release-unsigned.apk build/app/outputs/apk/release/app-release-signed.apk
+      - echo "APK zipaligned successfully."
+
+artifacts:
+  files:
+    - build/app/outputs/apk/release/app-release-signed.apk
+  discard-paths: yes
